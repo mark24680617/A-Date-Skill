@@ -1,0 +1,204 @@
+/*
+ * Trip configuration: everything personal lives in this one file.
+ * 行程配置：所有个性化内容都在这个文件里。
+ *
+ * This example is a one-day date in Shanghai, written in Chinese. For every field, see
+ * references/config.md in the skill; for the list of backgrounds, see references/scenes.md.
+ * 这个示例是一份中文的上海一日约会。字段说明见 references/config.md，背景清单见 references/scenes.md。
+ */
+window.TRIP_CONFIG = {
+  lang: 'zh-CN',                    // 'zh-CN' | 'en' | any BCP-47 tag: picks the built-in wording and date format
+  title: '我们的上海一日',
+  subtitle: 'One Day in Shanghai',
+  date: '2026 · 秋',
+  names: { a: '', b: '' },          // shown on the cover as "a ♥ b" when both are set
+  skyline: 'shanghai',              // city skyline drawn in the scenes: 'shanghai' | 'generic' | 'none'
+
+  // Original music-box loop (tools/make-music.py). Replace the mp3 to change it; '' = no music.
+  // 原创八音盒背景音乐。换歌就替换这个 mp3；'' 表示不放音乐。
+  music: 'assets/audio/bgm.mp3',
+
+  // Where the answers are sent, once, at the end: 'netlify' (Netlify Forms) | a form-service URL | 'none'
+  // 她的回答（只在最后提交一次）发到哪里：'netlify' | 表单服务网址 | 'none'
+  reply: { to: 'netlify' },
+
+  characters: {
+    // AI-generated sprite sheets (references/characters.md). src '' = use the built-in cartoon couple.
+    // AI 生成的人物精灵图；src 留空 = 使用内置卡通小人。
+    walk: { src: '', cols: 3, rows: 2, frames: 6, fps: 9 },          // e.g. 'assets/characters/walk.webp'
+    poses: {
+      src: '', cols: 3, rows: 2, frames: 6, normalize: false,        // e.g. 'assets/characters/poses.webp'
+      // order = left→right, top→bottom in the image; say = speech bubble when switching to it
+      list: [
+        { name: 'hold', say: '牵紧一点～' },
+        { name: 'hug', say: '抱抱！' },
+        { name: 'heart', say: '比心 ♥' },
+        { name: 'stroll', say: '一起走走吧' },
+        { name: 'piggyback', say: '背你走～' },
+        { name: 'chin', say: '看着你就很开心' },
+      ],
+    },
+    coverPose: 'heart',
+    standFrame: 2,     // without poses: which walk frame to stand in (0-based; the feet-together one)
+    height: 0.37,      // character height as a fraction of the scene height
+    // Built-in cartoon couple (used when there are no sprite sheets).
+    // a = left (short hair, shirt + trousers), b = right (long hair, dress)
+    builtin: {
+      a: { skin: '#FFDCC2', hair: '#2E2521', top: '#8EC3EC', bottom: '#3A4766' },
+      b: { skin: '#FFDCC2', hair: '#5B3A2E', dress: '#F7A6BA', shoes: '#B94A48' },
+    },
+  },
+
+  // Tap the couple → one of these pops up
+  lines: ['喜欢你～', '牵紧一点', '今天好开心！', '你今天好好看', '走累了吗？', '要抱抱', '和你在一起就很好'],
+
+  scenes: [
+    {
+      id: 'sleep',
+      bg: 'bedroom',
+      pet: 'samoyed',            // a fluffy dog by the bed; remove for no pet
+      icon: '🛏️',
+      time: '10:30',
+      title: '睡个大懒觉',
+      place: '家 · 暖烘烘的被窝',
+      text: '今天不定闹钟。阳光爬上窗台，我们在被窝里再多赖一会儿——反正今天的行程，是从“不着急”开始的。',
+      tasks: ['赖床十分钟', '互道早安', '喝杯生命之源（咖啡）', '慢慢吃个早午饭'],
+      accent: '#FFB547',
+      nextLabel: '起床啦',
+      lines: ['再睡五分钟…', '早安呀☀️', '被窝好暖'],
+      idle: { type: 'sleep', pose: 'hug' },
+    },
+    {
+      id: 'transport',
+      bg: 'street',
+      icon: '🚦',
+      time: '12:30',
+      title: '怎么去滨江？',
+      name: '楼下路口',           // short name for the top bar and captions (defaults to title)
+      place: '楼下路口',
+      text: '睡饱了，出门！去滨江怎么走，你来定～',
+      accent: '#26A69A',
+      labels: { arch: '幸福里', busTo: '滨江方向' },
+      lines: ['去滨江！', '今天天气真好', '你选我就跟着'],
+      idle: { type: 'stand', pose: 'stroll' },
+      // A required choice: must be picked before moving on; recorded in the final answer under `key`.
+      // On the street scene, option ids taxi / metro / bike also animate the taxi, signs and bikes.
+      choice: {
+        key: 'transport',
+        ask: '先选怎么去嘛～',
+        options: [
+          { id: 'taxi', icon: '🚕', label: '打车', say: '师傅，去徐汇滨江～', travel: '🚕 打车前往' },
+          { id: 'metro', icon: '🚇', label: '地铁/公交', say: '刷码进站，出发！', travel: '🚇 坐地铁/公交前往' },
+          { id: 'bike', icon: '🚲', label: '骑行（很累的哦）', say: '骑车吹风！腿会酸的哦', travel: '🚲 骑车前往' },
+        ],
+      },
+    },
+    {
+      id: 'binjiang',
+      bg: 'riverside',
+      icon: '🌊',
+      time: '14:00',
+      title: '徐汇滨江',
+      place: '徐汇滨江 · 西岸',
+      text: '沿着黄浦江慢慢走。江风吹过来，旧铁轨、老塔吊和一整条江的阳光，今天都是我们的。走累了，就在草坪上坐一会儿。',
+      tasks: ['江边拍一张合照', '看一眼卢浦大桥', '逛逛美术馆', '第 n 杯咖啡', '吹吹江风'],
+      accent: '#3FA7D6',
+      labels: { bridge: '卢浦大桥', sign: '徐汇滨江', signSub: '西岸 West Bund →' },
+      lines: ['风好舒服', '给你拍张照！', '江水亮晶晶的'],
+      idle: { type: 'stand', pose: 'heart' },
+    },
+    {
+      id: 'yuyuan',
+      bg: 'yuyuan',
+      icon: '🏮',
+      time: '17:30',
+      title: '城隍庙 · 豫园',
+      place: '老城厢 · 九曲桥边',
+      text: '傍晚的老城厢亮起一串串红灯笼。走过九曲桥，湖心亭的飞檐倒映在水里。人有点多，要牵紧我的手，别走散啦。',
+      tasks: ['走一走九曲桥', '等灯笼亮起来', '买一串糖葫芦'],
+      accent: '#E0533D',
+      labels: { pavilion: '湖心亭', gate: '老城厢' },
+      lines: ['灯笼亮啦！', '别走散哦', '想吃糖葫芦'],
+      idle: { type: 'stand', pose: 'piggyback' },
+    },
+    {
+      id: 'dinner',
+      bg: 'restaurant',
+      icon: '🥢',
+      time: '19:00',
+      title: '晚饭',
+      place: '一家好吃的小馆子',
+      text: '走了一天，终于到了最重要的环节：吃饭！小笼包要趁热，先咬一小口再喝汤；红烧肉的第一块，留给你。',
+      tasks: ['小笼包先咬一小口', '红烧肉第一块给你', '先拍照再动筷子'],
+      accent: '#E98A3C',
+      labels: { cuisine: '本帮菜' },
+      lines: ['好香！', '啊——张嘴', '这块给你'],
+      idle: { type: 'sit', pose: 'chin' },
+      // Optional dietary question (忌口); the answer goes into the final submission as `diet`
+      diet: {
+        button: '🥢 有什么忌口？',
+        title: '有什么忌口吗？',
+        hint: '选好了我就照着点菜～可以多选',
+        options: ['不吃辣', '不吃香菜', '不吃葱姜蒜', '不吃海鲜', '不吃内脏', '不吃肥肉', '不吃太甜', '在控糖'],
+        none: '都可以！',
+        otherPlaceholders: ['还有别的忌口……', '比如：花生过敏', '比如：不吃羊肉'],
+        empty: '选一个，或点「都可以！」',
+        send: '就这些',
+        cancel: '再想想',
+        saved: '记下啦，点菜会避开 ✓',
+        savedNone: '收到，什么都能吃！',
+        summary: '忌口：',
+      },
+    },
+    {
+      id: 'bar',
+      bg: 'bar',
+      icon: '🍸',
+      time: '21:00',
+      title: '清吧',
+      place: '一家安静的小酒馆',
+      sign: 'Moon Bar',          // neon sign on the wall ('' hides it); signIcon: 'glass' | 'heart' | 'berry'
+      text: '找一家安静的小酒馆坐一坐。灯光暗一点，音乐轻一点，碰个杯吧——敬今天，也敬以后的每一天。',
+      tasks: ['点一杯好看的特调', '碰杯', '说一句悄悄话'],
+      accent: '#9B6BE0',
+      nextLabel: '结束今天 ♥',
+      lines: ['干杯！', '今晚月色真美', '有点微醺'],
+      idle: { type: 'cheers', pose: 'hold' },
+    },
+  ],
+
+  // Cover: the "no" button runs away and can never be tapped
+  cover: { question: '准备好了吗？', yes: '准备好啦！', no: '不去了' },
+
+  // Pick-a-date calendar right after "yes". Only these dates can be chosen; recorded as `date`.
+  // Also accepted: { from: '2026-10-01', to: '2026-10-04' } or { year: 2026, month: 10, days: [1, 2, 3, 4] }.
+  // Delete the whole block to skip the calendar.
+  datePick: {
+    title: '哪天出发？',
+    hint: '国庆假期，只有这四天可以选哦～',
+    dates: ['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04'],
+    labels: { '2026-10-01': '国庆' },
+    confirm: '就这天出发 →',
+    pickFirst: '先选一天嘛',
+    disabled: '只能选 10/1 – 10/4 哦',
+  },
+
+  // Ending card. Submitted once per run-through: date + choices + diet + "next time" + suggestions.
+  ending: {
+    title: '上海的一天很短，\n和你在一起的日子很长。',
+    question: '下一次，我们去哪里？',
+    placeholders: ['下次想去……', '杭州喝龙井？', '成都吃火锅？', '海边看日出？', '还是再来一次上海？'],
+    approve: '准了',
+    feedback: '发表些建设性意见',
+    approved: '盖章生效，就这么定啦 ♥',
+    summary: true,           // show the picks (date / choices / diet) on the ending card
+    feedbackTitle: '请发表你的建设性意见',
+    feedbackHint: '哪里不满意、想加点什么，都写下来～',
+    feedbackPlaceholders: ['比如：早午饭要吃……', '比如：清吧之后还想……', '比如：咖啡必须三杯起'],
+    feedbackEmpty: '写点什么嘛～',
+    send: '提交意见',
+    cancel: '算了',
+    thanks: '意见已收到，马上整改！🫡',
+    replay: '↺ 再走一遍',
+  },
+};

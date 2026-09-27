@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FFD9E4">
+  <!-- keep this private little site out of search engines -->
+  <meta name="robots" content="noindex, nofollow">
+  <!-- set <html lang>, <title> and the description to match js/config.js (lang, title); link previews use them -->
+  <meta name="description" content="我们的上海一日">
+  <title>我们的上海一日</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%95%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- journey stage -->
+    <main id="stage">
+      <div id="scenes-back"></div>
+      <div id="actor">
+        <div id="actor-shadow"></div>
+        <div id="couple"></div>
+        <div id="bubble" aria-live="polite"></div>
+      </div>
+      <div id="scenes-front"></div>
+      <div id="hearts"></div>
+    </main>
+
+    <!-- top bar: clock + stops -->
+    <header id="hud" hidden>
+      <div class="clock" id="clock"><span class="clock-ico">🕙</span><span id="clock-text">10:30</span></div>
+      <ol id="stops"></ol>
+      <div class="hud-actions">
+        <button id="music-btn" class="icon-btn" hidden aria-pressed="true"><span>🎵</span></button>
+        <button id="home-btn" class="icon-btn">🏠</button>
+      </div>
+    </header>
+
+    <!-- stop card -->
+    <section id="card" class="card" hidden>
+      <div class="card-meta"><span id="card-time"></span><span id="card-place"></span></div>
+      <h2 id="card-title"></h2>
+      <p id="card-text"></p>
+      <ul id="card-tasks"></ul>
+    </section>
+    <div id="walking-note" hidden></div>
+
+    <!-- bottom buttons -->
+    <nav id="controls" hidden>
+      <button id="prev-btn" class="btn btn-ghost">←</button>
+      <button id="next-btn" class="btn btn-main">→</button>
+    </nav>
+
+    <!-- cover -->
+    <section id="cover">
+      <div class="cover-art" id="cover-art"></div>
+      <div class="cover-inner">
+        <p class="cover-kicker" id="cover-sub"></p>
+        <h1 class="cover-title" id="cover-title"></h1>
+        <p class="cover-date" id="cover-date"></p>
+        <p class="cover-q" id="cover-q"></p>
+        <div class="cover-choices">
+          <button id="start-btn" class="btn btn-main btn-big"></button>
+          <button id="nope-btn" class="btn btn-ghost btn-big"></button>
+        </div>
+        <p class="cover-hint" id="cover-hint"></p>
+      </div>
+      <div class="cover-couple" id="cover-couple"></div>
+    </section>
+
+    <!-- ending -->
+    <section id="ending" hidden>
+      <div class="ending-card card" id="ending-card">
+        <div class="ending-heart">💗</div>
+        <h2 id="ending-title"></h2>
+        <p class="ending-summary" id="ending-summary" hidden></p>
+        <label class="ending-ask" for="next-place" id="ending-ask"></label>
+        <div class="fancy-input" id="next-wrap">
+          <input id="next-place" type="text" maxlength="40" autocomplete="off" enterkeyhint="done">
+          <span class="fancy-ph" aria-hidden="true"></span>
+        </div>
+        <p class="ending-note" id="ending-note" hidden></p>
+        <div class="ending-actions" id="ending-actions">
+          <button id="approve-btn" class="btn btn-main"></button>
+          <button id="feedback-btn" class="btn btn-ghost"></button>
+        </div>
+        <button id="replay-btn" class="text-btn" hidden></button>
+        <div class="stamp" id="stamp" hidden aria-hidden="true"><span></span></div>
+      </div>
+    </section>
+
+    <!-- date picker (after "yes") -->
+    <section id="datepick" class="modal" hidden>
+      <div class="modal-card card date-card" id="date-card">
+        <div class="modal-emoji" aria-hidden="true">🗓️</div>
+        <h3 id="date-title"></h3>
+        <p class="modal-sub" id="date-sub"></p>
+        <div class="cal">
+          <div class="cal-head" id="cal-head"></div>
+          <div class="cal-week" aria-hidden="true"></div>
+          <div class="cal-grid" id="cal-grid" role="group" aria-labelledby="date-title"></div>
+        </div>
+        <p class="date-picked" id="date-picked" aria-live="polite"></p>
+        <div class="ending-actions"><button class="btn btn-main" id="date-go"></button></div>
+      </div>
+    </section>
+
+    <!-- suggestions -->
+    <section id="feedback" class="modal" hidden>
+      <form class="modal-card card" id="feedback-form" novalidate>
+        <h3 id="feedback-title"></h3>
+        <p class="modal-sub" id="feedback-sub"></p>
+        <div class="fancy-input fancy-area" id="feedback-wrap">
+          <textarea id="feedback-text" rows="5" maxlength="500" aria-labelledby="feedback-title"></textarea>
+          <span class="fancy-ph" aria-hidden="true"></span>
+        </div>
+        <div class="count"><span id="feedback-count">0</span> / 500</div>
+        <div class="ending-actions">
+          <button type="submit" class="btn btn-main" id="feedback-send"></button>
+          <button type="button" class="btn btn-ghost" id="feedback-cancel"></button>
+        </div>
+      </form>
+    </section>
+
+    <!-- diet -->
+    <section id="diet" class="modal" hidden>
+      <form class="modal-card card" id="diet-form" novalidate>
+        <div class="modal-emoji" aria-hidden="true"></div>
+        <h3 id="diet-title"></h3>
+        <p class="modal-sub" id="diet-sub"></p>
+        <div class="diet-chips" id="diet-chips" role="group" aria-labelledby="diet-title"></div>
+        <div class="fancy-input" id="diet-other-wrap">
+          <input id="diet-other" type="text" maxlength="60" autocomplete="off" enterkeyhint="done">
+          <span class="fancy-ph" aria-hidden="true"></span>
+        </div>
+        <div class="ending-actions">
+          <button type="submit" class="btn btn-main" id="diet-send"></button>
+          <button type="button" class="btn btn-ghost" id="diet-cancel"></button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Netlify Forms reads this hidden form at deploy time; replies show up under Netlify → Forms → trip-reply.
+         Every `choice.key` in js/config.js needs an <input name="…"> here (scripts/validate.mjs checks it).
+         Netlify Forms 在部署时识别这个表单；config.js 里每个 choice.key 都要在这里有一个同名 input。 -->
+    <form name="trip-reply" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="trip-reply">
+      <input name="verdict"><input name="date"><input name="transport"><input name="diet"><input name="next"><textarea name="feedback"></textarea><input name="summary"><input name="at"><input name="id"><input name="bot-field">
+    </form>
+
+    <div id="toast" hidden></div>
+  </div>
+
+  <audio id="bgm" loop preload="none"></audio>
+
+  <script src="js/config.js"></script>
+  <script src="js/couple.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/scenes/park.js"></script>
+  <script src="js/scenes/cafe.js"></script>
+  <script src="js/scenes/museum.js"></script>
+  <script src="js/scenes/beach.js"></script>
+  <script src="js/scenes/amusement.js"></script>
+  <script src="js/scenes/bistro.js"></script>
+  <script src="js/sprite.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

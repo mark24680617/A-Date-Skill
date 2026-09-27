@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>精灵图检查 · Sprite Checker</title>
+<style>
+  :root { --ink: #4A3440; --soft: #7C6470; --pink: #FF7F9D; --bg: #FFF4F7; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+  header { padding: 20px 24px 8px; }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  header p { margin: 0; color: var(--soft); font-size: 14px; line-height: 1.6; }
+  main { display: grid; grid-template-columns: 300px 1fr; gap: 20px; padding: 16px 24px 40px; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  .panel { background: #fff; border-radius: 18px; padding: 16px; box-shadow: 0 4px 0 rgba(120, 60, 80, .08), 0 10px 24px rgba(90, 40, 70, .08); }
+  label { display: block; font-size: 13px; font-weight: 700; margin: 10px 0 4px; color: var(--soft); }
+  input[type=number], select { width: 100%; padding: 8px 10px; border-radius: 10px; border: 1.5px solid #F0DDE3; font: inherit; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .drop { border: 2px dashed #F2B8C6; border-radius: 14px; padding: 18px; text-align: center; color: var(--soft); font-size: 14px; cursor: pointer; }
+  .drop.over { background: #FFE9EF; }
+  button { font: inherit; font-weight: 800; border: 0; border-radius: 12px; padding: 10px 14px; background: var(--pink); color: #fff; cursor: pointer; margin-top: 12px; width: 100%; }
+  button.ghost { background: #F6EAEE; color: var(--ink); }
+  h2 { font-size: 15px; margin: 0 0 10px; }
+  .checker { background-color: #fff; background-image: linear-gradient(45deg, #eee 25%, transparent 25%), linear-gradient(-45deg, #eee 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #eee 75%), linear-gradient(-45deg, transparent 75%, #eee 75%); background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0; }
+  #orig { max-width: 100%; border-radius: 10px; display: block; }
+  #frames { display: flex; gap: 8px; overflow-x: auto; padding: 6px 0; }
+  #frames canvas { height: 150px; border-radius: 8px; flex: none; }
+  .previews { display: flex; gap: 16px; flex-wrap: wrap; }
+  .pv { position: relative; width: 300px; height: 320px; border-radius: 14px; overflow: hidden; }
+  .pv canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+  .report { font-size: 13px; line-height: 1.7; color: var(--soft); white-space: pre-wrap; }
+  .warn { color: #D6283F; font-weight: 700; }
+  pre { background: #2F2A26; color: #F6EEDC; border-radius: 12px; padding: 12px; font-size: 12px; overflow-x: auto; }
+  .grid { display: grid; gap: 16px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>精灵图检查 · Sprite Checker</h1>
+  <p>把 gpt-image-2 生成的精灵图拖进来，检查抠图和逐帧对齐效果，调好参数后复制下面的配置到 <code>js/config.js</code>。<br>
+  Drop a generated sheet here to check the background removal and frame alignment, then copy the config snippet into <code>js/config.js</code>.</p>
+</header>
+<main>
+  <section class="panel">
+    <div class="drop" id="drop">拖入图片，或点击选择<br><small>Drop an image or click to choose</small></div>
+    <input type="file" id="file" accept="image/*" hidden>
+    <label>或者读取配置里的图片 / or load from config</label>
+    <select id="preset"><option value="">—</option></select>
+    <div class="row">
+      <div><label>列 cols</label><input type="number" id="cols" value="3" min="1" max="12"></div>
+      <div><label>行 rows</label><input type="number" id="rows" value="2" min="1" max="12"></div>
+    </div>
+    <div class="row">
+      <div><label>帧数 frames</label><input type="number" id="nframes" value="6" min="1" max="64"></div>
+      <div><label>帧率 fps</label><input type="number" id="fps" value="9" min="1" max="30"></div>
+    </div>
+    <label>抠图 background</label>
+    <select id="key"><option value="auto">自动 auto（推荐）</option><option value="none">不抠图 none（已是透明 PNG）</option></select>
+    <label><input type="checkbox" id="normalize" checked> 统一每帧大小（定格动作表请取消） / normalize frame size (untick for pose sheets)</label>
+    <label><input type="checkbox" id="ghost" checked> 叠加第 1 帧虚影（检查抖动） / onion-skin frame 1</label>
+    <button id="run">重新处理 / Process</button>
+    <button id="download" class="ghost" disabled>下载处理后的横条 PNG / Download cleaned strip</button>
+    <div class="report" id="report"></div>
+  </section>
+
+  <section class="grid">
+    <div class="panel"><h2>原图 + 识别框 / Source with detected frames</h2><canvas id="orig" class="checker"></canvas></div>
+    <div class="panel"><h2>处理后的帧（红线 = 脚底基线，蓝线 = 上半身中心） / Aligned frames</h2><div id="frames"></div></div>
+    <div class="panel"><h2>动画预览 / Preview</h2>
+      <div class="previews">
+        <div class="pv checker"><canvas id="pv1" width="600" height="640"></canvas></div>
+        <div class="pv" style="background:linear-gradient(#97D1F5,#FFF1DA 70%,#E6D3B5 70%)"><canvas id="pv2" width="600" height="640"></canvas></div>
+        <div class="pv" style="background:linear-gradient(#2B2450,#1B1632 70%,#2A1F33 70%)"><canvas id="pv3" width="600" height="640"></canvas></div>
+      </div>
+    </div>
+    <div class="panel"><h2>配置 / Config snippet</h2><pre id="snippet">—</pre></div>
+  </section>
+</main>
+
+<script src="../js/config.js"></script>
+<script src="../js/sprite.js"></script>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var img = null, srcPath = '', sprite = null, raf = 0;
+  var CFG = window.TRIP_CONFIG || {};
+
+  // presets from config
+  var presets = [];
+  var ch = CFG.characters || {};
+  ['walk', 'poses', 'idle'].forEach(function (k) { if (ch[k]) presets.push({ name: 'characters.' + k, cfg: ch[k] }); });
+  (CFG.scenes || []).forEach(function (s) { if (s.idle && s.idle.sprite) presets.push({ name: 'scenes[' + s.id + '].idle.sprite', cfg: s.idle.sprite }); });
+  presets.forEach(function (p, i) { var o = document.createElement('option'); o.value = i; o.textContent = p.name + ' — ' + p.cfg.src; $('#preset').appendChild(o); });
+  $('#preset').addEventListener('change', function () {
+    var p = presets[this.value]; if (!p) return;
+    $('#cols').value = p.cfg.cols || 1; $('#rows').value = p.cfg.rows || 1; $('#nframes').value = p.cfg.frames || 1; $('#fps').value = p.cfg.fps || 8;
+    $('#normalize').checked = p.cfg.normalize !== false;
+    srcPath = p.cfg.src;
+    window.TripSprite.loadImage('../' + p.cfg.src).then(function (im) { img = im; run(); }).catch(function () { $('#report').innerHTML = '<span class="warn">找不到文件 / not found: ' + p.cfg.src + '</span>'; });
+  });
+
+  var drop = $('#drop');
+  drop.addEventListener('click', function () { $('#file').click(); });
+  $('#file').addEventListener('change', function () { if (this.files[0]) useFile(this.files[0]); });
+  ['dragenter', 'dragover'].forEach(function (e) { drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (e) { drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function (ev) { var f = ev.dataTransfer.files[0]; if (f) useFile(f); });
+  document.addEventListener('paste', function (ev) { var it = [].find.call(ev.clipboardData.items, function (i) { return i.type.indexOf('image') === 0; }); if (it) useFile(it.getAsFile()); });
+
+  function useFile(f) {
+    srcPath = 'assets/characters/' + (f.name || 'walk.png');
+    window.TripSprite.loadImage(URL.createObjectURL(f)).then(function (im) { img = im; run(); });
+  }
+
+  ['cols', 'rows', 'nframes', 'fps', 'key', 'normalize'].forEach(function (id) { $('#' + id).addEventListener('change', run); });
+  $('#run').addEventListener('click', run);
+
+  function cfg() {
+    return { cols: +$('#cols').value, rows: +$('#rows').value, frames: +$('#nframes').value, fps: +$('#fps').value, key: $('#key').value, normalize: $('#normalize').checked };
+  }
+
+  function run() {
+    if (!img) return;
+    var c = cfg();
+    var t0 = performance.now();
+    sprite = window.TripSprite.process(img, c);
+    var ms = Math.round(performance.now() - t0);
+    drawOrig(c);
+    if (!sprite) { $('#report').innerHTML = '<span class="warn">没有识别到任何帧 / no frames found</span>'; return; }
+    drawFrames();
+    var r = sprite.report;
+    $('#report').innerHTML = '尺寸 size: ' + img.naturalWidth + '×' + img.naturalHeight +
+      '\n抠图 key: ' + r.key + (r.bg ? ' (' + r.bg + ')' : '') +
+      '\n帧 frames: ' + sprite.frames.length + ' · 帧尺寸 ' + sprite.frameW + '×' + sprite.frameH +
+      '\n耗时 time: ' + ms + ' ms' +
+      (r.warnings.length ? '\n<span class="warn">' + r.warnings.join('\n') + '</span>' : '\n✓ 看起来不错 / looks good');
+    var snip = { src: srcPath || 'assets/characters/walk.png', cols: c.cols, rows: c.rows, frames: c.frames, fps: c.fps };
+    if (c.key === 'none') snip.key = 'none';
+    if (!c.normalize) snip.normalize = false;
+    $('#snippet').textContent = JSON.stringify(snip).replace(/"(\w+)":/g, '$1: ').replace(/,/g, ', ').replace(/"/g, "'");
+    $('#download').disabled = false;
+    cancelAnimationFrame(raf);
+    var start = performance.now();
+    (function loop(now) {
+      var i = Math.floor(Math.max(0, now - start) / 1000 * c.fps) % sprite.frames.length;
+      ['#pv1', '#pv2', '#pv3'].forEach(function (s) { preview($(s), i); });
+      raf = requestAnimationFrame(loop);
+    })(start);
+  }
+
+  function drawOrig(c) {
+    var cv = $('#orig'), W = img.naturalWidth, H = img.naturalHeight;
+    cv.width = W; cv.height = H;
+    var g = cv.getContext('2d');
+    g.drawImage(img, 0, 0);
+    g.lineWidth = Math.max(2, W / 400);
+    g.strokeStyle = 'rgba(255,255,255,.8)'; g.setLineDash([12, 10]);
+    for (var i = 1; i < c.cols; i++) { g.beginPath(); g.moveTo(W / c.cols * i, 0); g.lineTo(W / c.cols * i, H); g.stroke(); }
+    for (var j = 1; j < c.rows; j++) { g.beginPath(); g.moveTo(0, H / c.rows * j); g.lineTo(W, H / c.rows * j); g.stroke(); }
+    g.setLineDash([]);
+    if (sprite && sprite.report.boxes) {
+      g.strokeStyle = '#FF2D6B';
+      g.font = 'bold ' + Math.round(W / 40) + 'px sans-serif'; g.fillStyle = '#FF2D6B';
+      sprite.report.boxes.forEach(function (b, k) { g.strokeRect(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0); g.fillText(k + 1, b.x0 + 6, b.y0 + W / 36); });
+    }
+  }
+
+  function drawFrames() {
+    var box = $('#frames'); box.innerHTML = '';
+    sprite.frames.forEach(function (f) {
+      var c = document.createElement('canvas'); c.width = f.width; c.height = f.height; c.className = 'checker';
+      var g = c.getContext('2d'); g.drawImage(f, 0, 0);
+      g.strokeStyle = '#FF2D6B'; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(0, f.height - sprite.padBottom); g.lineTo(f.width, f.height - sprite.padBottom); g.stroke();
+      g.strokeStyle = '#3FA7D6';
+      g.beginPath(); g.moveTo(f.width / 2, 0); g.lineTo(f.width / 2, f.height); g.stroke();
+      box.appendChild(c);
+    });
+  }
+
+  function preview(cv, i) {
+    var g = cv.getContext('2d'), sp = sprite;
+    g.clearRect(0, 0, cv.width, cv.height);
+    var h = cv.height * 0.8, scale = h / sp.contentH;
+    var fw = sp.frameW * scale, fh = sp.frameH * scale;
+    var x = cv.width / 2 - fw / 2, y = cv.height * 0.9 - (sp.frameH - sp.padBottom) * scale;
+    g.save();
+    g.fillStyle = 'rgba(40,20,30,.2)';
+    g.beginPath(); g.ellipse(cv.width / 2, cv.height * 0.9, fw * 0.4, fw * 0.06, 0, 0, Math.PI * 2); g.fill();
+    if ($('#ghost').checked) { g.globalAlpha = 0.25; g.drawImage(sp.frames[0], x, y, fw, fh); g.globalAlpha = 1; }
+    g.drawImage(sp.frames[i], x, y, fw, fh);
+    g.restore();
+  }
+
+  $('#download').addEventListener('click', function () {
+    if (!sprite) return;
+    var n = sprite.frames.length, c = document.createElement('canvas');
+    c.width = sprite.frameW * n; c.height = sprite.frameH;
+    var g = c.getContext('2d');
+    sprite.frames.forEach(function (f, k) { g.drawImage(f, k * sprite.frameW, 0); });
+    c.toBlob(function (b) {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = (srcPath.split('/').pop() || 'walk.png').replace(/\.\w+$/, '') + '-clean.png';
+      a.click();
+      var cf = cfg();
+      $('#snippet').textContent = "{ src: 'assets/characters/" + a.download + "', cols: " + n + ", rows: 1, frames: " + n + ", fps: " + cf.fps + ", key: 'none' }";
+    });
+  });
+})();
+</script>
+</body>
+</html>

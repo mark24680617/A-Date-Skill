@@ -1,0 +1,13 @@
+{
+  "name": "one-day-date-skill",
+  "description": "Build a cute 3D-cartoon date-day website from a trip plan and two photos.",
+  "owner": { "name": "mark24680617" },
+  "plugins": [
+    {
+      "name": "one-day-date",
+      "source": "./",
+      "description": "Turn a trip plan (and optional photos of the two of you) into a deployed, interactive date website: walking couple, date picker, choices, and her answers sent back to you.",
+      "version": "1.0.0"
+    }
+  ]
+}
