@@ -101,7 +101,16 @@ Usually the user deploys, so send something like this, in the user's language:
 >
 > **Your partner's answers arrive in [language]:** *[a short gloss of the options if the user doesn't read it]*
 >
-> **Want the characters to look like you two?** *[AI prompt + where to paste it]*
+> **The two of you:** *[the characters line: one of the three below]*
+
+For the characters line, pick the one that fits:
+- **Made by an image model:** "The two characters were drawn by *[service]* from your photos (or your description)." Nothing for them to do. If the outfits came from the photos, add: "They wear what you wore in the photos. Tell me if you'd rather wear something else on the day." Flag it if those clothes don't suit the date's season or weather.
+- **Images still pending:** "The cartoon couple on the site is a placeholder for now. To swap in the two of you: open ChatGPT, Gemini or 豆包, upload your photos (*[left person]* first), paste the prompts below one at a time in the same chat, save each picture with the download button and send them to me. Or set an OpenAI or Gemini API key in your terminal (not in the chat), and I'll make them. I'll put them in, then you drag the folder in again under **Deploys**."
+  - Without photos, leave out the upload step: the prompts already describe them.
+  - Add the filled-in prompts (characters.md, level 2).
+  - Attach `<skill>/references/example/from-sheet-to-site.jpg` as "this is what you'll get". It shows the example couple, not them.
+  - If the site is going live before the pictures arrive, say so plainly, so the placeholder isn't a surprise.
+- **Built-in couple by choice, or because no image route was possible:** say where it doesn't match them ("the cartoon gives you long hair"), and that an image model can still draw the real two of them any time.
 
 ## After deploying: test it
 

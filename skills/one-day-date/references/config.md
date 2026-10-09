@@ -26,21 +26,23 @@ Contents: [Top level](#top-level) · [characters](#characters) · [scenes (stops
 
 ```js
 characters: {
+  // sheets from an image model (make-characters.mjs, or the user's app; see characters.md)
   walk:  { src: 'assets/characters/walk.webp',  cols: 3, rows: 2, frames: 6, fps: 9 },
   poses: { src: 'assets/characters/poses.webp', cols: 3, rows: 2, frames: 6, normalize: false,
            list: [{ name: 'hold', say: '…' }, …] },   // one entry per pose, left→right, top→bottom
   coverPose: 'heart',  // pose shown on the cover
   standFrame: 2,       // without poses: which walk frame (0-based) to stand in
   height: 0.37,        // character height as a fraction of scene height
-  builtin: {           // the built-in cartoon couple, used when walk.src is ''
+  builtin: {           // the built-in cartoon couple: fallback and placeholder, used when walk.src is ''
     a: { skin: '#FFDCC2', hair: '#2E2521', top: '#8EC3EC', bottom: '#3A4766' },   // left: short hair, shirt, trousers (these are the defaults)
     b: { skin: '#FFDCC2', hair: '#5B3A2E', dress: '#F7A6BA', shoes: '#B94A48' },  // right: long hair, dress
   },
 }
 ```
 
-- Set `walk.src: ''` to use the built-in couple. The `poses` block is ignored while its `src` is `''`.
-- Generating the sheets and choosing the colours: see characters.md.
+- **Where `walk.src` and `poses.src` come from.** Normally from an image model. `scripts/make-characters.mjs` saves the sheets in `assets/characters/` and prints the exact lines to paste here; sheets the user makes in an app, or that you make with your own image tool, go in the same folder. The extension in `src` must match the file (`.png`, `.jpg` or `.webp`). Validate warns about sheets over 1 MB and prints a WebP conversion command. See characters.md.
+- **The built-in couple is the fallback.** Leave `walk.src: ''` to use it: when no image model was possible, or as the placeholder while the images are on their way. Colour it with `builtin` either way, since it also shows if a sheet fails to load. The `poses` block is ignored while its `src` is `''`.
+- **Sprites need a walk sheet.** `poses` and `characters.idle` are used only when `walk.src` is set. (A stop's own `idle.sprite` works either way.)
 - Pose names are free text. Each stop refers to one by `idle.pose`. The template's six are: `hold`, `hug`, `heart`, `stroll`, `piggyback`, `chin`.
 - `idle: { src, cols, rows, frames, fps }` is optional: a looping standing animation, used when there are no poses.
 
@@ -88,7 +90,7 @@ characters: {
 
 Optional extras on `idle`:
 - `lower: 0.1` adjusts how low `sit` puts them.
-- `sprite: { src, cols, rows, frames, fps, height }` plays a special animation at this stop only (e.g. a toast).
+- `sprite: { src, cols, rows, frames, fps, height }` plays a special animation at this stop only (e.g. a toast). Add it next to the stop's `type` and `pose`: `idle: { type: 'cheers', pose: 'hold', sprite: { … } }` (characters.md, Special animations).
 
 ## choice (a decision your partner makes)
 

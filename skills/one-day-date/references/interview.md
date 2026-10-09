@@ -4,15 +4,25 @@ The person you're helping may never have touched code. Ask for everything in one
 
 ## The one message to send
 
-Adapt this to what they've already told you, and write it in *their* language:
+Adapt this to what they've already told you, and write it in *their* language. About question 6 (the ladder is in characters.md):
+- **They already said how** (they set an API key, or want to use their own app): drop it and use that route.
+- **Your own image tool accepts reference images, or they'll describe themselves instead of sending photos:** you can drop it. Say you'll make the cartoon versions yourself, and name the service the photos would go to, so they can say no.
+- **Your image tool takes text only:** keep question 6. A key or an app can use their photos; the text-only tool, with a description, is the fallback for when neither works.
+- **You have no image tool at all:** keep question 6, and leave "I'll draw you from a description myself" out of its bracket.
 
 > To make your date website I need a few things (anything you skip gets a sensible default):
 > 1. **Who's it for?** Your two names or nicknames. They're optional, and shown on the cover.
 > 2. **Language** the site should be in (the language your partner reads).
 > 3. **The plan.** Paste your itinerary or trip guide. Or just tell me the city and roughly what you'd enjoy, and I'll draft one for you.
-> 4. **Photos (optional).** One clear photo of each of you: facing the camera, good light, whole body if possible. I only use them to create the cartoon versions of you two.
-> 5. **Dates.** Which day(s) could the date happen? Your partner picks one on the site.
-> 6. **Little extras (defaults in brackets):**
+> 4. **Photos (recommended).** One clear photo of each of you (or one of you both): facing the camera, good light, whole body if possible. An image model turns them into 3D-cartoon versions of you two, and that's what makes the site feel like *you*. The photos only go to the image service we agree on: I'll tell you which one before sending them anywhere. No photos? Describe each of you instead: hair, skin tone, glasses, build.
+> 5. **What you'll wear on the date,** roughly. E.g. "a cream sweater and jeans; a pink dress". It's drawn into every picture of you two. [what you wear in the photos]
+> 6. **How can we make the pictures?** Any *one* of these is enough:
+>    - an OpenAI or Google Gemini API key (don't paste it here: I'll show you how to set it safely);
+>    - a ChatGPT, Gemini or 豆包 / 即梦 account: free is fine. I'll give you a prompt to paste, and you send me back the pictures.
+>
+>    [if none: I'll draw you from a description myself, or use a built-in cartoon couple in your colours]
+> 7. **Dates.** Which day(s) could the date happen? Your partner picks one on the site.
+> 8. **Little extras (defaults in brackets):**
 >    - Should your partner choose something along the way, like how to get there or what dessert to have? [how to get there, if you're travelling]
 >    - A "what don't you eat?" question at the meal? [yes]
 >    - A pet in the opening scene? [no]
@@ -21,8 +31,13 @@ Adapt this to what they've already told you, and write it in *their* language:
 **Must-haves before you build:** the language, and either a plan or a city. Everything else can default:
 - names: none on the cover;
 - dates: skip the calendar;
-- photos: built-in cartoon couple;
+- photos: none yet. Ask once more, gently, when you send the first screenshots. Meanwhile an image model can work from a description, and the built-in couple is the placeholder;
+- outfits: what they wear in the photos, or "a casual date outfit". Outfits are drawn into every frame of the sprite sheets, so if you take them from the photos, check them against the season and weather of the date (a T-shirt in the photo, a December date). Say in the hand-off that you used the photo outfits, and flag a mismatch;
+- image route: the one they chose, if they did (a key means the script, characters.md level 1b). Otherwise your own image tool, if it accepts reference images or there are no photos (name the service before sending photos). Otherwise the app route: send the prompts (characters.md, level 2) and keep the built-in couple as the placeholder until the pictures arrive. If neither a key nor an app works and your image tool takes text only, use it with the description version (after telling them). The built-in couple stays only if none of these is possible, or they decline;
+- photos and consent: before sending real photos anywhere, name the service and let them say no. If you can't ask, use the description version of the prompt, or prepare the level-2 prompts for them;
 - extras: as above.
+
+**Why photos are worth asking for:** the AI characters are what make the site feel like the two of them. The built-in cartoon couple is generic and fixed in shape. Ask warmly and explain this in one line, but never pressure: some people won't share photos, and a description still works.
 
 **Where the answers go** is a hosting question, not something to ask up front. Default to Netlify Forms (see deploy.md).
 

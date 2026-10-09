@@ -98,7 +98,22 @@ if (ch.coverPose && poseNames.length && !poseNames.includes(ch.coverPose)) err(`
 const bi = ch.builtin || {};
 for (const who of ['a', 'b']) for (const [k, v] of Object.entries(bi[who] || {})) if (!HEX.test(v)) err(`characters.builtin.${who}.${k} should be a colour like '#AABBCC' (got "${v}")`);
 if (ch.walk && ch.walk.src) ok(`characters: sprite sheets (${[ch.walk && ch.walk.src, ch.poses && ch.poses.src].filter(Boolean).join(', ')})`);
-else ok('characters: built-in cartoon couple (no sprite sheets set)');
+else {
+  warn('characters: built-in couple (fallback/placeholder) — make sprite sheets with an image model (references/characters.md); fine if the user chose the built-in couple');
+  const without = ['poses', 'idle'].filter((k) => ch[k] && ch[k].src);
+  if (without.length) warn(`characters.${without.join(' / ')} ${without.length > 1 ? 'are' : 'is'} set but walk.src is empty — the site only uses ${without.length > 1 ? 'them' : 'it'} together with a walk sheet`);
+}
+// big sheets: every phone downloads them before the couple appears
+const sheetFiles = [['walk', ch.walk], ['poses', ch.poses], ['idle', ch.idle]].map(([k, s]) => [`characters.${k}`, s && s.src]);
+(Array.isArray(C.scenes) ? C.scenes : []).forEach((sc, i) => sheetFiles.push([`stop ${i + 1} idle.sprite`, sc && sc.idle && sc.idle.sprite && sc.idle.sprite.src]));
+for (const [where, src] of sheetFiles) {
+  if (!src || !has(src) || !statSync(join(site, src)).isFile()) continue;
+  const mb = statSync(join(site, src)).size / 1e6;
+  if (mb <= 1) continue;
+  const isWebp = /\.webp$/i.test(src);
+  const out = src.replace(/\.[^./]+$/, '') + (isWebp ? '-small.webp' : '.webp');
+  warn(`${where}: ${src} is ${mb.toFixed(1)} MB — sprite sheets over ~1 MB load slowly on phones. ${isWebp ? 'Re-save it with a lower quality' : 'Convert it to WebP'}, in the site folder: python3 -c "from PIL import Image; Image.open('${src}').save('${out}', quality=${isWebp ? 70 : 85})" and set src: '${out}'`);
+}
 
 // ---- stops ---------------------------------------------------------------------------------
 const S = Array.isArray(C.scenes) ? C.scenes : [];

@@ -55,7 +55,7 @@ Relabel so nothing is wrong, but don't agonise over signs a phone never shows.
 
 ### `bedroom`: home, late morning
 - **What's in it:** a cosy bedroom with a sunny window (a skyline outside), a bed and plants.
-- **Opening stop:** with `idle: { type: 'sleep' }`, the built-in couple is asleep in bed until your partner taps "yes".
+- **Opening stop:** with `idle: { type: 'sleep' }`, the built-in couple is asleep in bed until your partner taps "yes". Image-model characters stand by the empty bed instead, drowsy ("five more minutes"), in the stop's `idle.pose`.
 - **Options:**
   - `pet: 'samoyed'` adds a fluffy dog.
   - `labels.frame` is the photo-frame caption: 我们 / us.

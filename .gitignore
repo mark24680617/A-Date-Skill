@@ -2,3 +2,8 @@ node_modules/
 *-preview/
 .DS_Store
 Thumbs.db
+
+# Safety net: example sites tried at the repo root (the READMEs use ../shanghai-ai-try and ../try-it)
+/shanghai-ai/
+/shanghai-ai-try/
+/try-it/

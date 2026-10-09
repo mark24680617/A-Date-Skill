@@ -24,11 +24,14 @@ mkdirSync(dest, { recursive: true });
 // tools/ and the scene-authoring README stay in the skill: they shouldn't go live with the site
 const skip = new Set([join(template, 'tools'), join(template, 'js', 'scenes', 'README.md')]);
 cpSync(template, dest, { recursive: true, filter: (src) => !skip.has(src) && !/\.gitkeep$|[\\/]\.preview([\\/]|$)/.test(src) });
+// paths in the printed commands: quoted when they hold spaces or other shell characters
+const q = (p) => ((process.platform === 'win32' ? /^[\w@%+=:,./\\-]+$/ : /^[\w@%+=:,./-]+$/).test(p) ? p : '"' + (process.platform === 'win32' ? p : p.replace(/(["$`\\])/g, '\\$1')) + '"');
 console.log(`✓ Website template copied to ${dest}
 
 Next:
   1. Edit ${join(dest, 'js', 'config.js')} (stops, text, dates, language)
-  2. Put character images in ${join(dest, 'assets', 'characters')} (optional)
-  3. node ${join(here, 'validate.mjs')} ${dest}
-  4. node ${join(here, 'preview.mjs')} ${dest}  → screenshots + click-through in ${dest}-preview
-  5. node ${join(here, 'serve.mjs')} ${dest}    → open the printed URL to click around yourself`);
+  2. Characters: make the sprite sheets with an image model (references/characters.md, scripts/make-characters.mjs) — the built-in couple is only the placeholder
+     They go in ${join(dest, 'assets', 'characters')}; make-characters.mjs saves them there and prints the config lines
+  3. node ${q(join(here, 'validate.mjs'))} ${q(dest)}
+  4. node ${q(join(here, 'preview.mjs'))} ${q(dest)}  → screenshots + click-through in ${dest}-preview
+  5. node ${q(join(here, 'serve.mjs'))} ${q(dest)}    → open the printed URL to click around yourself`);

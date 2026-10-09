@@ -1,10 +1,10 @@
 {
   "name": "one-day-date",
-  "version": "1.0.0",
-  "description": "Turn a trip plan (and optional photos of the two of you) into a deployed, interactive 3D-cartoon date website.",
+  "version": "1.1.0",
+  "description": "Turn a trip plan and photos of the two of you into a deployed, interactive 3D-cartoon date website, with the two of you drawn by an image model.",
   "author": { "name": "mark24680617" },
-  "homepage": "https://github.com/mark24680617/one-day-date-skill",
-  "repository": "https://github.com/mark24680617/one-day-date-skill",
+  "homepage": "https://github.com/mark24680617/A-Date-Skill",
+  "repository": "https://github.com/mark24680617/A-Date-Skill",
   "license": "MIT",
-  "keywords": ["date", "website", "trip", "itinerary", "couple", "skill"]
+  "keywords": ["date", "website", "trip", "itinerary", "couple", "image-generation", "skill"]
 }
